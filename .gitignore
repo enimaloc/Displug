@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+all,java,eclipse,gradle
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+all,java,eclipse,gradle
 
+### File related project ###
+data/
+
 ### Eclipse ###
 .metadata
 bin/

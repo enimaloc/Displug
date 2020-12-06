@@ -273,10 +273,3 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.yaml,*.yml}]
-indent_size = 2
-ij_yaml_keep_indents_on_empty_lines = false
-ij_yaml_keep_line_breaks = true
-ij_yaml_space_before_colon = true
-ij_yaml_spaces_within_braces = true
-ij_yaml_spaces_within_brackets = true
