@@ -2,6 +2,7 @@ package ga.enimaloc.displug.internal;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -11,7 +12,6 @@ public class Configuration {
     public final static File DEFAULT_CONFIGURATION_FILE = new File("data", "displug.yml");
 
     private final File configurationFile;
-    private String token;
     private Map<String, Object> extra;
 
     public Configuration() {
@@ -20,14 +20,13 @@ public class Configuration {
 
     public Configuration(File configurationFile) {
         this.configurationFile = configurationFile;
-        this.token = "YOUR_BOT_TOKEN_GOES_HERE";
         this.extra = new HashMap<>();
+        setDefault();
     }
 
     public void load() {
         try (FileInputStream fileInputStream = new FileInputStream(configurationFile)) {
             extra = new Yaml().load(fileInputStream);
-            token = (String) extra.remove("token");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,7 +34,6 @@ public class Configuration {
 
     public void save() {
         Map<String, Object> saved = new HashMap<>();
-        saved.put("token", token);
         saved.putAll(extra);
         try (FileWriter writer = new FileWriter(configurationFile)) {
             DumperOptions options = new DumperOptions();
@@ -46,6 +44,17 @@ public class Configuration {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setDefault() {
+        this.extra.clear();
+        setExtra("token",  "YOUR_BOT_TOKEN_GOES_HERE");
+        setExtra("prefix", new String[]{"!"});
+    }
+
+    public void reset() {
+        setDefault();
+        save();
     }
 
     public void setExtra(String key, Object value) {
@@ -69,6 +78,10 @@ public class Configuration {
     }
 
     public String getToken() {
-        return token;
+        return getExtra(String.class, "token");
+    }
+
+    public List<String> getPrefix() {
+        return getExtra(List.class, "prefix");
     }
 }
