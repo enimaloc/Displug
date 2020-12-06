@@ -203,6 +203,7 @@
  */
 
 plugins {
+    id 'maven'
     id 'java'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
@@ -216,6 +217,8 @@ repositories {
 }
 
 compileJava.options.encoding = 'UTF-8'
+//compileJava.options.fork = true
+//compileJava.options.forkOptions.executable = '{$System.env.JAVA_HOME}/bin/javac'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
