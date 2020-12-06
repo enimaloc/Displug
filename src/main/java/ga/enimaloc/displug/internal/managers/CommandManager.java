@@ -32,7 +32,7 @@ public class CommandManager extends DManager<String, Command> implements EventLi
                 raw = raw.replaceFirst(prefix, "");
                 String[] splitRaw = raw.split(" ");
                 raw = raw.replaceFirst(splitRaw[0]+" ", "");
-                Command command = get(splitRaw[0]).orElse(null);
+                Command command = get(splitRaw[0]);
                 if (command == null) {
                     continue;
                 }

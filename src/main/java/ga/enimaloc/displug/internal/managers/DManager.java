@@ -21,8 +21,8 @@ public class DManager<K, V> {
         this.objects.remove(key);
     }
 
-    public Optional<V> get(K key) {
-        return Optional.of(this.objects.get(key));
+    public V get(K key) {
+        return this.objects.get(key);
     }
 
     public Map<K, V> all() {
