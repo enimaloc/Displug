@@ -217,8 +217,8 @@ repositories {
 }
 
 compileJava.options.encoding = 'UTF-8'
-compileJava.options.fork = true
-compileJava.options.forkOptions.executable = '{$System.env.JAVA_HOME}/bin/javac'
+//compileJava.options.fork = true
+//compileJava.options.forkOptions.executable = '{$System.env.JAVA_HOME}/bin/javac'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
