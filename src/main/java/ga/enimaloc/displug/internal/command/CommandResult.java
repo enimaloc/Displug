@@ -202,40 +202,40 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package ga.enimaloc.displug.internal.command;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import java.util.function.BiConsumer;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Message;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+public enum CommandResult {
 
-compileJava.options.encoding = 'UTF-8'
+    REPLY((message, input) -> message.getChannel().sendMessage(input.toString()).queue()),
+    REACT_UNICODE   ((message, input) -> message.addReaction((String) input).queue()),
+    REACT_EMOTE     ((message, input) -> message.addReaction((Emote) input).queue());
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
+    private final BiConsumer<Message, Object> action;
+    private Object input;
+    private CommandResult next;
 
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    CommandResult(BiConsumer<Message, Object> action) {
+        this.action = action;
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    public CommandResult setInput(Object input) {
+        this.input = input;
+        return this;
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    public void execute(Message message) {
+        action.accept(message, input);
+        if (next != null) {
+            next.execute(message);
+        }
+    }
+
+    public CommandResult next(CommandResult commandResult) {
+        next = commandResult;
+        return this;
+    }
 }

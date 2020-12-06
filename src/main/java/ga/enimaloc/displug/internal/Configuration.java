@@ -202,40 +202,90 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package ga.enimaloc.displug.internal;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import java.io.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+public class Configuration {
 
-compileJava.options.encoding = 'UTF-8'
+    public final static File DEFAULT_CONFIGURATION_FILE = new File("data", "displug.yml");
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
+    private final File configurationFile;
+    private Map<String, Object> extra;
 
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    public Configuration() {
+        this(DEFAULT_CONFIGURATION_FILE);
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    public Configuration(File configurationFile) {
+        this.configurationFile = configurationFile;
+        this.extra = new HashMap<>();
+        setDefault();
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    public void load() {
+        try (FileInputStream fileInputStream = new FileInputStream(configurationFile)) {
+            extra = new Yaml().load(fileInputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void save() {
+        Map<String, Object> saved = new HashMap<>(extra);
+        try (FileWriter writer = new FileWriter(configurationFile)) {
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setPrettyFlow(true);
+            options.setCanonical(false);
+            new Yaml(options).dump(saved, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setDefault() {
+        this.extra.clear();
+        setExtra("token",  "YOUR_BOT_TOKEN_GOES_HERE");
+        setExtra("prefix", new String[]{"!"});
+    }
+
+    public void reset() {
+        setDefault();
+        save();
+    }
+
+    public void setExtra(String key, Serializable value) {
+        extra.put(key, value);
+    }
+
+    public <T> T getExtra(Class<T> asClazz, String key) {
+        return asClazz.cast(extra.get(key));
+    }
+
+    public <T> T getExtra(Class<T> asClazz, String key, T defaultValue) {
+        return asClazz.cast(extra.getOrDefault(key, defaultValue));
+    }
+
+    public Object getExtra(String key) {
+        return getExtra(Object.class, key);
+    }
+
+    public Object getExtra(String key, Object defaultValue) {
+        return getExtra(Object.class, key, defaultValue);
+    }
+
+    public String getToken() {
+        return getExtra(String.class, "token");
+    }
+
+    public List<String> getPrefix() {
+        //noinspection unchecked
+        return getExtra(List.class, "prefix");
+    }
 }

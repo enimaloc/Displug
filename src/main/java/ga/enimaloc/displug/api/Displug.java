@@ -202,40 +202,17 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package ga.enimaloc.displug.api;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import ga.enimaloc.displug.internal.Configuration;
+import net.dv8tion.jda.api.JDA;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+public interface Displug {
 
-compileJava.options.encoding = 'UTF-8'
+    JDA getJDA();
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
+    Configuration getConfiguration();
 
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
-    }
-}
+    void addCommand(Command command);
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
-    }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
 }

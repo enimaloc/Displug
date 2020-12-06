@@ -202,40 +202,127 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package org.slf4j.impl;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.zip.CRC32;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.slf4j.ILoggerFactory;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+/**
+ * Origin Code by SLF4J-Simple [Link=https://github.com/qos-ch/slf4j/tree/master/slf4j-simple]
+ * Modified by enimaloc
+ */
+public class LoggerFactory implements ILoggerFactory {
+    private final ConcurrentMap<String, Logger> loggerMap = new ConcurrentHashMap<>();
+    private final BufferedWriter writer;
 
-compileJava.options.encoding = 'UTF-8'
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    public LoggerFactory() throws IOException {
+        this.writer = newFileLogger();
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    private BufferedWriter newFileLogger() throws IOException {
+        File folder = new File("logs");
+        if(!folder.exists() && !folder.mkdir()) {
+            throw new IOException("Can't create the log folder.");
+        }
+
+        File file = new File(folder, "latest.log");
+
+        if(file.exists()) {
+            zipFile(folder, file);
+            if(!file.delete()) {
+                this.getLogger("ERROR").warn("Can't delete the latest file logger in the logs folder.");
+            }
+        }
+        return new BufferedWriter(new FileWriter(file));
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    public Logger getLogger(Class<?> clazz) {
+        return getLogger(clazz.getSimpleName());
+    }
+
+    public Logger getLogger(String name) {
+        Logger logger = loggerMap.get(name);
+        if (logger != null) {
+            return logger;
+        } else {
+            Logger newInstance = new Logger(name, this);
+            Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
+            return oldInstance == null ? newInstance : oldInstance;
+        }
+    }
+
+    protected void log(String log) {
+        if(this.writer == null) {
+            return;
+        }
+
+        try {
+            this.writer.write(log);
+            this.writer.newLine();
+            this.writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void zipFile(File folder, File file) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd_MM_yyyy__HH_mm_ss");
+        try(ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(new File(folder, simpleDateFormat.format(new Date()) + ".zip")))) {
+            zipOutputStream.setMethod(ZipOutputStream.STORED);
+            zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
+
+            FileInputStream in = new FileInputStream(file);
+            byte[] bytes = new byte[in.available()];
+            //noinspection ResultOfMethodCallIgnored
+            in.read(bytes, 0, bytes.length);
+            in.close();
+
+            String[] path = file.getPath().split("/");
+            String splitFormat = "/";
+            if(path.length < 3) {
+                path = file.getPath().split("\\\\");
+                splitFormat = "\\";
+            }
+
+            StringBuilder builder = new StringBuilder();
+
+            for(int i = 1; i <path.length-1; i++)
+                builder.append(path[i]).append(splitFormat);
+            builder.append(path[path.length-1]);
+
+            ZipEntry entry = new ZipEntry(builder.toString());
+            entry.setTime(file.lastModified());
+
+            CRC32 crc32 = new CRC32();
+            crc32.update(bytes);
+
+            entry.setSize(bytes.length);
+            entry.setCrc(crc32.getValue());
+
+            zipOutputStream.putNextEntry(entry);
+
+            zipOutputStream.write(bytes);
+            zipOutputStream.closeEntry();
+
+            zipOutputStream.flush();
+        }catch (Exception exception){
+            this.getLogger(Logger.ROOT_LOGGER_NAME).error(exception.getMessage(), exception);
+        }
+    }
+
+    public void close() {
+        try {
+            this.writer.close();
+        } catch (IOException e) {
+            this.getLogger(Logger.ROOT_LOGGER_NAME).error("Can't close the buffer writer of logger.");
+        }
+    }
 }

@@ -202,40 +202,98 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package ga.enimaloc.displug.api;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import java.awt.*;
+import java.util.function.Consumer;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+public class Category {
 
-compileJava.options.encoding = 'UTF-8'
+    private final String name;
+    private final String description;
+    private final Color color;
+    private final Consumer<MessageReceivedEvent> onCommand;
+    private final Consumer<PrivateMessageReceivedEvent> onPrivateCommand;
+    private final Consumer<GuildMessageReceivedEvent> onGuildCommand;
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    Category(
+            String name,
+            String description,
+            Color color,
+            Consumer<MessageReceivedEvent> onCommand,
+            Consumer<PrivateMessageReceivedEvent> onPrivateCommand,
+            Consumer<GuildMessageReceivedEvent> onGuildCommand
+    ) {
+        this.name = name;
+        this.description = description;
+        this.color = color;
+        this.onCommand = onCommand;
+        this.onPrivateCommand = onPrivateCommand;
+        this.onGuildCommand = onGuildCommand;
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    public String getName() {
+        return name;
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public Consumer<MessageReceivedEvent> getOnCommand() {
+        return onCommand;
+    }
+
+    public Consumer<PrivateMessageReceivedEvent> getOnPrivateCommand() {
+        return onPrivateCommand;
+    }
+
+    public Consumer<GuildMessageReceivedEvent> getOnGuildCommand() {
+        return onGuildCommand;
+    }
+
+    public static class Builder {
+
+        private String name;
+        private String description;
+        private Color color;
+        private Consumer<MessageReceivedEvent> onCommand;
+        private Consumer<PrivateMessageReceivedEvent> onPrivateCommand;
+        private Consumer<GuildMessageReceivedEvent> onGuildCommand;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setColor(Color color) {
+            this.color = color;
+        }
+
+        public void setOnCommand(Consumer<MessageReceivedEvent> onCommand) {
+            this.onCommand = onCommand;
+        }
+
+        public void setOnPrivateCommand(Consumer<PrivateMessageReceivedEvent> onPrivateCommand) {
+            this.onPrivateCommand = onPrivateCommand;
+        }
+
+        public void setOnGuildCommand(Consumer<GuildMessageReceivedEvent> onGuildCommand) {
+            this.onGuildCommand = onGuildCommand;
+        }
+
+        public Category build() {
+            return new Category(name, description, color, onCommand, onPrivateCommand, onGuildCommand);
+        }
+    }
 }

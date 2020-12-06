@@ -202,40 +202,41 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package org.slf4j.impl;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import java.io.IOException;
+import org.slf4j.spi.LoggerFactoryBinder;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+/**
+ * Origin Code by SLF4J-Simple [Link=https://github.com/qos-ch/slf4j/tree/master/slf4j-simple]
+ * Modified by enimaloc
+ */
+public class StaticLoggerBinder implements LoggerFactoryBinder
+{
+    private static final StaticLoggerBinder SINGLETON = new StaticLoggerBinder();
 
-compileJava.options.encoding = 'UTF-8'
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    public static StaticLoggerBinder getSingleton() {
+        return SINGLETON;
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    private final LoggerFactory loggerFactory;
+
+    public StaticLoggerBinder() {
+        LoggerFactory loggerFactory = null;
+        try {
+            loggerFactory = new LoggerFactory();
+        }catch (IOException ignored){}
+
+        this.loggerFactory = loggerFactory;
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    @Override
+    public LoggerFactory getLoggerFactory() {
+        return loggerFactory;
+    }
+
+    @Override
+    public String getLoggerFactoryClassStr() {
+        return loggerFactory.getClass().getName();
+    }
 }

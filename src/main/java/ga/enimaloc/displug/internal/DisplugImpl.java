@@ -202,40 +202,75 @@
  *    limitations under the License.
  */
 
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-}
+package ga.enimaloc.displug.internal;
 
-group 'ga.enimaloc'
-version '0.0.1'
+import ga.enimaloc.displug.api.Command;
+import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.internal.managers.CommandManager;
+import ga.enimaloc.displug.internal.managers.PluginManager;
+import ga.enimaloc.displug.plugin.Displugin;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+import javax.security.auth.login.LoginException;
 
-compileJava.options.encoding = 'UTF-8'
+public class DisplugImpl implements Displug {
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
+    private JDA jda;
+    private final Configuration configuration;
+    private final CommandManager commandManager;
+    private final PluginManager pluginManager;
 
-jar {
-    manifest {
-        attributes(
-            'Main-Class': 'ga.enimaloc.displug.internal.Main'
-        )
+    public DisplugImpl() {
+        configuration = new Configuration();
+        commandManager = new CommandManager(this);
+        pluginManager = new PluginManager(this);
     }
-}
 
-dependencies {
-    compile (group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
-        exclude module: 'opus-java'
+    public void start() {
+        setupConfiguration();
+        setupPlugins();
+        setupJDA();
     }
-    compile group: 'io.sentry', name: 'sentry', version: '1.7.30'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.21'
+
+    private void setupConfiguration() {
+        if (!Configuration.DEFAULT_CONFIGURATION_FILE.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
+            configuration.save();
+            System.exit(0);
+        }
+        configuration.load();
+    }
+
+    private void setupPlugins() {
+        pluginManager.loadPlugins();
+        pluginManager.all().forEach(Displugin::onEnable);
+    }
+
+    private void setupJDA() {
+        try {
+            jda = JDABuilder.createDefault(configuration.getToken()).addEventListeners(commandManager).build();
+        } catch (LoginException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addCommand(Command command) {
+        commandManager.add(command.getName(), command);
+        for (String alias : command.getAliases()) {
+            commandManager.add(alias, command);
+        }
+    }
+
+    @Override
+    public JDA getJDA() {
+        return jda;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }
