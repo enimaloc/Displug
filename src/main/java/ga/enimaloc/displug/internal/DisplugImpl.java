@@ -5,6 +5,8 @@ import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.internal.command.CommandContext;
 import ga.enimaloc.displug.internal.command.CommandResult;
 import ga.enimaloc.displug.internal.managers.CommandManager;
+import ga.enimaloc.displug.internal.managers.PluginManager;
+import ga.enimaloc.displug.plugin.Displugin;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 
@@ -15,9 +17,21 @@ public class DisplugImpl implements Displug {
     private JDA jda;
     private Configuration configuration;
     private CommandManager commandManager;
+    private PluginManager pluginManager;
 
     public DisplugImpl() {
         configuration = new Configuration();
+        commandManager = new CommandManager(this);
+        pluginManager = new PluginManager(this);
+    }
+
+    public void start() {
+        setupConfiguration();
+        setupPlugins();
+        setupJDA();
+    }
+
+    private void setupConfiguration() {
         if (!Configuration.DEFAULT_CONFIGURATION_FILE.exists()) {
             //noinspection ResultOfMethodCallIgnored
             Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
@@ -25,11 +39,14 @@ public class DisplugImpl implements Displug {
             System.exit(0);
         }
         configuration.load();
-
-        commandManager = new CommandManager(this);
     }
 
-    public void start() {
+    private void setupPlugins() {
+        pluginManager.loadPlugins();
+        pluginManager.all().forEach(Displugin::onEnable);
+    }
+
+    private void setupJDA() {
         try {
             jda = JDABuilder.createDefault(configuration.getToken()).addEventListeners(commandManager).build();
         } catch (LoginException e) {
