@@ -204,74 +204,37 @@
 
 package ga.enimaloc.displug.internal;
 
-import ga.enimaloc.displug.api.Command;
-import ga.enimaloc.displug.api.Displug;
-import ga.enimaloc.displug.internal.managers.CommandManager;
-import ga.enimaloc.displug.internal.managers.PluginManager;
-import ga.enimaloc.displug.plugin.Displugin;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
+import org.slf4j.event.Level;
+import org.slf4j.impl.Logger;
 
-import javax.security.auth.login.LoginException;
+public enum ExitCode {
 
-public class DisplugImpl implements Displug {
+    JDA_RELATED(1001),
+    CONFIGURATION_RELATED(1002),
+    PLUGIN_RELATED(1003),
+    COMMAND_RELATED(1004),
+    EVENT_RELATED(1005),
+    UNKNOWN(1999);
 
-    private JDA jda;
-    private final Configuration configuration;
-    private final CommandManager commandManager;
-    private final PluginManager pluginManager;
+    private final int code;
 
-    public DisplugImpl() {
-        configuration = new Configuration();
-        commandManager = new CommandManager(this);
-        pluginManager = new PluginManager(this);
+    ExitCode(int code) {
+        this.code = code;
     }
 
-    public void start() {
-        setupConfiguration();
-        setupPlugins();
-        setupJDA();
+    public void exit() {
+        System.exit(code);
     }
 
-    private void setupConfiguration() {
-        if (!Configuration.DEFAULT_CONFIGURATION_FILE.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
-            configuration.save();
-            ExitCode.CONFIGURATION_RELATED.exit();
+    public void exit(Logger logger, Level level, String message) {
+        switch (level) {
+            case TRACE -> logger.trace(message);
+            case DEBUG -> logger.debug(message);
+            case INFO -> logger.info(message);
+            case WARN -> logger.warn(message);
+            case ERROR -> logger.error(message);
+            default -> logger.console(message);
         }
-        configuration.load();
-    }
-
-    private void setupPlugins() {
-        pluginManager.loadPlugins();
-        pluginManager.all().forEach(Displugin::onEnable);
-    }
-
-    private void setupJDA() {
-        try {
-            jda = JDABuilder.createDefault(configuration.getToken()).addEventListeners(commandManager).build();
-        } catch (LoginException e) {
-            e.printStackTrace();
-            ExitCode.JDA_RELATED.exit();
-        }
-    }
-
-    @Override
-    public void addCommand(Command command) {
-        commandManager.add(command.getName(), command);
-        for (String alias : command.getAliases()) {
-            commandManager.add(alias, command);
-        }
-    }
-
-    @Override
-    public JDA getJDA() {
-        return jda;
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return configuration;
+        System.exit(code);
     }
 }
