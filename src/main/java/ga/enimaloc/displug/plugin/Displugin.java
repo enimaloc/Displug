@@ -205,10 +205,8 @@
 package ga.enimaloc.displug.plugin;
 
 import ga.enimaloc.displug.api.Displug;
-import ga.enimaloc.displug.internal.objects.Indentable;
-import ga.enimaloc.displug.internal.objects.Permissible;
 
-public abstract class Displugin implements Permissible, Indentable {
+public abstract class Displugin {
 
     private final Displug displug;
 
