@@ -238,7 +238,7 @@ public class DisplugImpl implements Displug {
             //noinspection ResultOfMethodCallIgnored
             Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
             configuration.save();
-            ExitCode.CONFIGURATION_RELATED.exit();
+            System.exit(0);
         }
         configuration.load();
     }
@@ -253,7 +253,6 @@ public class DisplugImpl implements Displug {
             jda = JDABuilder.createDefault(configuration.getToken()).addEventListeners(commandManager).build();
         } catch (LoginException e) {
             e.printStackTrace();
-            ExitCode.JDA_RELATED.exit();
         }
     }
 
