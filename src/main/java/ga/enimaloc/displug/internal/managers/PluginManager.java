@@ -205,6 +205,7 @@
 package ga.enimaloc.displug.internal.managers;
 
 import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.internal.DisplugImpl;
 import ga.enimaloc.displug.internal.exception.PluginException;
 import ga.enimaloc.displug.plugin.Displugin;
 import java.io.File;
@@ -213,10 +214,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import org.slf4j.impl.Logger;
 import org.slf4j.impl.StaticLoggerBinder;
 import org.yaml.snakeyaml.Yaml;
@@ -275,6 +273,7 @@ public class PluginManager extends SManager<Displugin> {
                     throw new PluginException("Main class of a plugin not extend Displugin class");
                 }
                 Displugin plugin = (Displugin) mainClass.getConstructor(Displug.class).newInstance(displug);
+                ((DisplugImpl) displug).getRequiredPermission().addAll(Arrays.asList(plugin.getPermissions()));
                 plugin.onLoad();
                 add(plugin);
             } catch (MalformedURLException e) {

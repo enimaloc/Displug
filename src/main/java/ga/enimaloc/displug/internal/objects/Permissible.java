@@ -202,27 +202,14 @@
  *    limitations under the License.
  */
 
-package ga.enimaloc.displug.plugin;
+package ga.enimaloc.displug.internal.objects;
 
-import ga.enimaloc.displug.api.Displug;
-import ga.enimaloc.displug.internal.objects.Indentable;
-import ga.enimaloc.displug.internal.objects.Permissible;
+import net.dv8tion.jda.api.Permission;
 
-public abstract class Displugin implements Permissible, Indentable {
+public interface Permissible {
 
-    private final Displug displug;
-
-    public Displugin(Displug displug) {
-        this.displug = displug;
+    default Permission[] getPermissions() {
+        return Permission.EMPTY_PERMISSIONS;
     }
 
-    protected Displug getDisplug() {
-        return displug;
-    }
-
-    public abstract void onLoad();
-
-    public abstract void onEnable();
-
-    public abstract void onDisable();
 }
