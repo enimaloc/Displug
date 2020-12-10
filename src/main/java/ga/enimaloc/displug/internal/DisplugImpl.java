@@ -209,11 +209,13 @@ import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.internal.managers.CommandManager;
 import ga.enimaloc.displug.internal.managers.PluginManager;
 import ga.enimaloc.displug.plugin.Displugin;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
 
@@ -253,8 +255,10 @@ public class DisplugImpl implements Displug {
     }
 
     private void setupJDA() {
+        List<GatewayIntent> intents = new ArrayList<>();
+        pluginManager.all().forEach(plugin -> intents.addAll(Arrays.asList(plugin.getIntents())));
         try {
-            jda = JDABuilder.createDefault(configuration.getToken()).addEventListeners(commandManager).build();
+            jda = JDABuilder.create(configuration.getToken(), intents).addEventListeners(commandManager).build();
         } catch (LoginException e) {
             e.printStackTrace();
         }
