@@ -211,6 +211,8 @@ public interface Displug {
 
     JDA getJDA();
 
+    String getInviteUrl();
+
     Configuration getConfiguration();
 
     void addCommand(Command command);

@@ -209,17 +209,21 @@ import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.internal.managers.CommandManager;
 import ga.enimaloc.displug.internal.managers.PluginManager;
 import ga.enimaloc.displug.plugin.Displugin;
+import java.util.Arrays;
+import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 
 import javax.security.auth.login.LoginException;
 
 public class DisplugImpl implements Displug {
 
-    private JDA jda;
     private final Configuration configuration;
     private final CommandManager commandManager;
     private final PluginManager pluginManager;
+    private JDA jda;
+    private List<Permission> requiredPermission;
 
     public DisplugImpl() {
         configuration = new Configuration();
@@ -256,8 +260,18 @@ public class DisplugImpl implements Displug {
         }
     }
 
+    public List<Permission> getRequiredPermission() {
+        return requiredPermission;
+    }
+
+    @Override
+    public String getInviteUrl() {
+        return getJDA().getInviteUrl(getRequiredPermission());
+    }
+
     @Override
     public void addCommand(Command command) {
+        getRequiredPermission().addAll(Arrays.asList(command.getPermissions()));
         commandManager.add(command.getName(), command);
         for (String alias : command.getAliases()) {
             commandManager.add(alias, command);
