@@ -208,6 +208,7 @@ import net.dv8tion.jda.api.Permission;
 
 public interface Permissible {
 
+    @SuppressWarnings("SameReturnValue")
     default Permission[] getPermissions() {
         return Permission.EMPTY_PERMISSIONS;
     }

@@ -221,13 +221,14 @@ import javax.security.auth.login.LoginException;
 
 public class DisplugImpl implements Displug {
 
+    private final List<Permission> requiredPermission;
     private final Configuration configuration;
     private final CommandManager commandManager;
     private final PluginManager pluginManager;
     private JDA jda;
-    private List<Permission> requiredPermission;
 
     public DisplugImpl() {
+        requiredPermission = new ArrayList<>();
         configuration = new Configuration();
         commandManager = new CommandManager(this);
         pluginManager = new PluginManager(this);
@@ -276,11 +277,7 @@ public class DisplugImpl implements Displug {
 
     @Override
     public void addCommand(Command command) {
-        getRequiredPermission().addAll(Arrays.asList(command.getPermissions()));
-        commandManager.add(command.getName(), command);
-        for (String alias : command.getAliases()) {
-            commandManager.add(alias, command);
-        }
+
     }
 
     @Override

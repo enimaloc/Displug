@@ -214,7 +214,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import org.slf4j.impl.Logger;
 import org.slf4j.impl.StaticLoggerBinder;
 import org.yaml.snakeyaml.Yaml;
@@ -224,7 +226,6 @@ public class PluginManager extends SManager<Displugin> {
     public static final File DEFAULT_PLUGINS_FOLDER = new File("data", "plugins");
 
     private final Displug displug;
-    private final List<Displugin> plugins;
     private final File pluginsFolder;
 
     private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(PluginManager.class);
@@ -234,7 +235,6 @@ public class PluginManager extends SManager<Displugin> {
     }
 
     public PluginManager(Displug displug, File pluginsFolder) {
-        this.plugins = new ArrayList<>();
         this.pluginsFolder = pluginsFolder;
         //noinspection ResultOfMethodCallIgnored
         this.pluginsFolder.mkdirs();

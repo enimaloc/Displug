@@ -211,6 +211,7 @@ import org.slf4j.spi.MDCAdapter;
  * Origin Code by SLF4J-Simple [Link=https://github.com/qos-ch/slf4j/tree/master/slf4j-simple]
  * Modified by enimaloc
  */
+@SuppressWarnings("SameReturnValue")
 public class StaticMDCBinder {
     /**
      * The unique instance of this class.

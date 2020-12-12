@@ -208,7 +208,7 @@ import ga.enimaloc.displug.internal.command.CommandContext;
 import ga.enimaloc.displug.internal.command.CommandResult;
 import ga.enimaloc.displug.internal.objects.Permissible;
 
-@SuppressWarnings({"SameReturnValue"})
+@SuppressWarnings({"SameReturnValue", "RedundantThrows"})
 public interface Command extends Permissible {
 
     String getName();
