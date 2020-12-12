@@ -214,10 +214,14 @@ import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.impl.Logger;
+import org.slf4j.impl.StaticLoggerBinder;
 
 public class CommandManager extends DManager<String, Command> implements EventListener {
 
     private final Displug displug;
+
+    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass());
 
     public CommandManager(Displug displug) {
         this.displug = displug;
@@ -254,7 +258,7 @@ public class CommandManager extends DManager<String, Command> implements EventLi
                 try {
                     command.execute(new CommandContext((MessageReceivedEvent) event, raw)).execute(((MessageReceivedEvent) event).getMessage());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.warn("An error as occurred when executing command (%s)".formatted(command.getName()), e);
                 }
             }
         }

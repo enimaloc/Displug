@@ -204,9 +204,10 @@
 
 package ga.enimaloc.displug.internal;
 
-import org.slf4j.event.Level;
+import java.lang.reflect.InvocationTargetException;
 import org.slf4j.impl.Logger;
 
+@SuppressWarnings("unused")
 public enum ExitCode {
 
     JDA_RELATED(1001),
@@ -226,15 +227,88 @@ public enum ExitCode {
         System.exit(code);
     }
 
+    public void exit(Logger logger, String message) {
+        exit(logger, Level.INFO, message);
+    }
+
     public void exit(Logger logger, Level level, String message) {
+        exit(logger, level, message, (Throwable) null);
+    }
+
+    public void exit(Class<? extends Throwable> clazz) {
+        exit(null, Level.CONSOLE, "", clazz);
+    }
+
+    public void exit(Throwable throwable) {
+        exit(null, Level.CONSOLE, "", throwable);
+    }
+
+    public void exit(Logger logger, Class<? extends Throwable> clazz) {
+        exit(logger, "", clazz);
+    }
+
+    public void exit(Logger logger, Throwable throwable) {
+        exit(logger, "", throwable);
+    }
+
+    public void exit(Logger logger, String message, Class<? extends Throwable> clazz) {
+        exit(logger, Level.ERROR, message, clazz);
+    }
+
+    public void exit(Logger logger, String message, Throwable throwable) {
+        exit(logger, Level.ERROR, message, throwable);
+    }
+
+    public void exit(Logger logger, Level level, Class<? extends Throwable> clazz) {
+        exit(logger, level, "", clazz);
+    }
+
+    public void exit(Logger logger, Level level, Throwable throwable) {
+        exit(logger, level, "", throwable);
+    }
+
+    public void exit(Logger logger, Level level, String message, Class<? extends Throwable> clazz) {
+        try {
+            thr(clazz);
+        } catch (Throwable throwable) {
+            exit(logger, level, message, throwable);
+        }
+    }
+
+    public void exit(Logger logger, Level level, String message, Throwable throwable) {
         switch (level) {
-            case TRACE -> logger.trace(message);
-            case DEBUG -> logger.debug(message);
-            case INFO -> logger.info(message);
-            case WARN -> logger.warn(message);
-            case ERROR -> logger.error(message);
-            default -> logger.console(message);
+            case TRACE -> logger.trace(message, throwable);
+            case DEBUG -> logger.debug(message, throwable);
+            case INFO -> logger.info(message, throwable);
+            case WARN -> logger.warn(message, throwable);
+            case ERROR -> logger.error(message, throwable);
+            case CONSOLE -> {
+                if (logger == null) {
+                    System.out.println(message);
+                } else {
+                    logger.console(message);
+                }
+                if (throwable != null) {
+                    throwable.printStackTrace();
+                }
+            }
         }
         System.exit(code);
+    }
+
+    private void thr(Class<? extends Throwable> clazz) throws Throwable {
+        try {
+            throw clazz.cast(clazz.getDeclaredConstructor(new Class[]{}).newInstance());
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
+        }
+    }
+
+    enum Level {
+        ERROR,
+        WARN,
+        INFO,
+        DEBUG,
+        TRACE,
+        CONSOLE
     }
 }
