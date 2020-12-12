@@ -395,6 +395,7 @@ public class Logger implements org.slf4j.Logger {
             }
 
             Throwable[] var17 = t.getSuppressed();
+            //noinspection unused
             int var14 = var17.length;
 
             for (Throwable se : var17) {

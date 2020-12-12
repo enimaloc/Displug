@@ -206,7 +206,9 @@ package ga.enimaloc.displug.internal.managers;
 
 import ga.enimaloc.displug.api.Command;
 import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.internal.DisplugImpl;
 import ga.enimaloc.displug.internal.command.CommandContext;
+import java.util.Arrays;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -219,6 +221,15 @@ public class CommandManager extends DManager<String, Command> implements EventLi
 
     public CommandManager(Displug displug) {
         this.displug = displug;
+    }
+
+    @Override
+    public void add(String key, Command command) {
+        ((DisplugImpl) displug).getRequiredPermission().addAll(Arrays.asList(command.getPermissions()));
+        super.add(command.getName(), command);
+        for (String alias : command.getAliases()) {
+            super.add(alias, command);
+        }
     }
 
     @Override

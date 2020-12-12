@@ -215,6 +215,7 @@ public interface Displug {
 
     Configuration getConfiguration();
 
+    @SuppressWarnings("EmptyMethod")
     void addCommand(Command command);
 
 }
