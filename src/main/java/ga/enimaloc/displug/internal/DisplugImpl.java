@@ -216,6 +216,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.slf4j.impl.Logger;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.security.auth.login.LoginException;
 
@@ -226,6 +228,8 @@ public class DisplugImpl implements Displug {
     private final CommandManager commandManager;
     private final PluginManager pluginManager;
     private JDA jda;
+
+    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass().getInterfaces()[0]);
 
     public DisplugImpl() {
         requiredPermission = new ArrayList<>();
@@ -245,7 +249,7 @@ public class DisplugImpl implements Displug {
             //noinspection ResultOfMethodCallIgnored
             Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
             configuration.save();
-            ExitCode.CONFIGURATION_RELATED.exit();
+            ExitCode.CONFIGURATION_RELATED.exit(logger, ExitCode.Level.INFO, "A new configuration file was created please modify it!");
         }
         configuration.load();
     }
@@ -261,8 +265,7 @@ public class DisplugImpl implements Displug {
         try {
             jda = JDABuilder.create(configuration.getToken(), intents).addEventListeners(commandManager).build();
         } catch (LoginException e) {
-            e.printStackTrace();
-            ExitCode.JDA_RELATED.exit();
+            ExitCode.JDA_RELATED.exit(logger, e);
         }
     }
 

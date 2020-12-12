@@ -206,6 +206,7 @@ package ga.enimaloc.displug.internal.managers;
 
 import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.internal.DisplugImpl;
+import ga.enimaloc.displug.internal.ExitCode;
 import ga.enimaloc.displug.internal.exception.PluginException;
 import ga.enimaloc.displug.plugin.Displugin;
 import java.io.File;
@@ -228,7 +229,7 @@ public class PluginManager extends SManager<Displugin> {
     private final Displug displug;
     private final File pluginsFolder;
 
-    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(PluginManager.class);
+    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass());
 
     public PluginManager(Displug displug) {
         this(displug, PluginManager.DEFAULT_PLUGINS_FOLDER);
@@ -294,7 +295,7 @@ public class PluginManager extends SManager<Displugin> {
                 throw new PluginException("???", e);
             }
         } catch (PluginException pluginException) {
-            logger.error("Error while loading "+file.getName(), pluginException);
+            ExitCode.PLUGIN_RELATED.exit(logger, "Error while loading " + file.getName(), pluginException);
         }
     }
 }

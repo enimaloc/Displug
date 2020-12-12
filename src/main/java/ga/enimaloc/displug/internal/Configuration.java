@@ -208,6 +208,8 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.impl.Logger;
+import org.slf4j.impl.StaticLoggerBinder;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -217,6 +219,8 @@ public class Configuration {
 
     private final File configurationFile;
     private Map<String, Object> extra;
+
+    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass());
 
     public Configuration() {
         this(DEFAULT_CONFIGURATION_FILE);
@@ -231,8 +235,8 @@ public class Configuration {
     public void load() {
         try (FileInputStream fileInputStream = new FileInputStream(configurationFile)) {
             extra = new Yaml().load(fileInputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException exception) {
+            ExitCode.CONFIGURATION_RELATED.exit(logger, exception);
         }
     }
 
@@ -244,8 +248,8 @@ public class Configuration {
             options.setPrettyFlow(true);
             options.setCanonical(false);
             new Yaml(options).dump(saved, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException exception) {
+            ExitCode.CONFIGURATION_RELATED.exit(logger, exception);
         }
     }
 
