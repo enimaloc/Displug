@@ -202,98 +202,30 @@
  *    limitations under the License.
  */
 
-package ga.enimaloc.displug.internal;
+package ga.enimaloc.displug.api.events.command;
 
 import ga.enimaloc.displug.api.Command;
-import ga.enimaloc.displug.api.Displug;
-import ga.enimaloc.displug.api.events.plugin.PluginStarted;
-import ga.enimaloc.displug.internal.managers.CommandManager;
-import ga.enimaloc.displug.internal.managers.EventManager;
-import ga.enimaloc.displug.internal.managers.PluginManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import ga.enimaloc.displug.internal.command.CommandContext;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.slf4j.impl.Logger;
-import org.slf4j.impl.StaticLoggerBinder;
+import net.dv8tion.jda.api.events.Event;
+import org.jetbrains.annotations.NotNull;
 
-import javax.security.auth.login.LoginException;
+public class CommandExecuted extends Event {
 
-public class DisplugImpl implements Displug {
+    private final Command executedCommand;
+    private final CommandContext commandContext;
 
-    private final List<Permission> requiredPermission;
-    private final Configuration configuration;
-    private final CommandManager commandManager;
-    private final PluginManager pluginManager;
-    private JDA jda;
-
-    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass().getInterfaces()[0]);
-
-    public DisplugImpl() {
-        requiredPermission = new ArrayList<>();
-        configuration = new Configuration();
-        commandManager = new CommandManager(this);
-        pluginManager = new PluginManager(this);
+    public CommandExecuted(@NotNull JDA api, Command executedCommand, CommandContext commandContext) {
+        super(api);
+        this.executedCommand = executedCommand;
+        this.commandContext = commandContext;
     }
 
-    public void start() {
-        setupConfiguration();
-        setupPlugins();
-        setupJDA();
+    public Command getExecutedCommand() {
+        return executedCommand;
     }
 
-    private void setupConfiguration() {
-        if (!Configuration.DEFAULT_CONFIGURATION_FILE.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
-            configuration.save();
-            ExitCode.CONFIGURATION_RELATED.exit(logger, ExitCode.Level.INFO, "A new configuration file was created please modify it!");
-        }
-        configuration.load();
-    }
-
-    private void setupPlugins() {
-        pluginManager.loadPlugins();
-        pluginManager.all().forEach(displugin -> {
-            getJDA().getEventManager().handle(new PluginStarted(getJDA(), displugin));
-            displugin.onEnable();
-        });
-    }
-
-    private void setupJDA() {
-        List<GatewayIntent> intents = new ArrayList<>();
-        pluginManager.all().forEach(plugin -> intents.addAll(Arrays.asList(plugin.getIntents())));
-        try {
-            jda = JDABuilder.create(configuration.getToken(), intents).setEventManager(new EventManager()).addEventListeners(commandManager).build();
-        } catch (LoginException e) {
-            ExitCode.JDA_RELATED.exit(logger, e);
-        }
-    }
-
-    public List<Permission> getRequiredPermission() {
-        return requiredPermission;
-    }
-
-    @Override
-    public String getInviteUrl() {
-        return getJDA().getInviteUrl(getRequiredPermission());
-    }
-
-    @Override
-    public void addCommand(Command command) {
-        commandManager.add("", command);
-    }
-
-    @Override
-    public JDA getJDA() {
-        return jda;
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return configuration;
+    public CommandContext getCommandContext() {
+        return commandContext;
     }
 }
