@@ -207,7 +207,9 @@ package ga.enimaloc.displug.internal;
 public class Main {
 
     public static void main(String[] args) {
-        new DisplugImpl().start();
+        DisplugImpl displug = new DisplugImpl();
+        displug.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(displug::shutdown));
     }
 
 }
