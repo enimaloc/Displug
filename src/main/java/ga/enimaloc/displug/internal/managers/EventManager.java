@@ -204,11 +204,12 @@
 
 package ga.enimaloc.displug.internal.managers;
 
-import ga.enimaloc.displug.api.events.EventListener;
 import java.util.Arrays;
 import java.util.List;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.IEventManager;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 public class EventManager extends SManager<EventListener> implements IEventManager {
@@ -263,7 +264,7 @@ public class EventManager extends SManager<EventListener> implements IEventManag
 
     @Override
     public void register(@NotNull Object listener) {
-        if (!(listener instanceof EventListener)) {
+        if (!(listener instanceof EventListener) || listener instanceof ListenerAdapter) {
             throw new ClassCastException("A listener need to extend EventListener");
         }
         super.add((EventListener) listener);
@@ -271,7 +272,7 @@ public class EventManager extends SManager<EventListener> implements IEventManag
 
     @Override
     public void unregister(@NotNull Object listener) {
-        if (!(listener instanceof EventListener)) {
+        if (!(listener instanceof EventListener) || listener instanceof ListenerAdapter) {
             throw new ClassCastException("A listener need to extend EventListener");
         }
         super.remove((EventListener) listener);
@@ -279,7 +280,7 @@ public class EventManager extends SManager<EventListener> implements IEventManag
 
     @Override
     public void handle(@NotNull GenericEvent event) {
-        this.all().forEach(eventListener -> eventListener.onEvent(event));
+        super.all().forEach(eventListener -> eventListener.onEvent(event));
     }
 
     @NotNull
