@@ -206,9 +206,10 @@ package ga.enimaloc.displug.internal;
 
 import ga.enimaloc.displug.api.Command;
 import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.api.events.plugin.PluginStarted;
 import ga.enimaloc.displug.internal.managers.CommandManager;
+import ga.enimaloc.displug.internal.managers.EventManager;
 import ga.enimaloc.displug.internal.managers.PluginManager;
-import ga.enimaloc.displug.plugin.Displugin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -256,14 +257,17 @@ public class DisplugImpl implements Displug {
 
     private void setupPlugins() {
         pluginManager.loadPlugins();
-        pluginManager.all().forEach(Displugin::onEnable);
+        pluginManager.all().forEach(displugin -> {
+            getJDA().getEventManager().handle(new PluginStarted(getJDA(), displugin));
+            displugin.onEnable();
+        });
     }
 
     private void setupJDA() {
         List<GatewayIntent> intents = new ArrayList<>();
         pluginManager.all().forEach(plugin -> intents.addAll(Arrays.asList(plugin.getIntents())));
         try {
-            jda = JDABuilder.create(configuration.getToken(), intents).addEventListeners(commandManager).build();
+            jda = JDABuilder.create(configuration.getToken(), intents).setEventManager(new EventManager()).addEventListeners(commandManager).build();
         } catch (LoginException e) {
             ExitCode.JDA_RELATED.exit(logger, e);
         }

@@ -202,78 +202,53 @@
  *    limitations under the License.
  */
 
-package ga.enimaloc.displug.internal.managers;
+package ga.enimaloc.displug.api.events;
 
-import ga.enimaloc.displug.api.Command;
-import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.api.events.command.CommandExecuted;
 import ga.enimaloc.displug.api.events.command.CommandRegister;
-import ga.enimaloc.displug.internal.DisplugImpl;
-import ga.enimaloc.displug.internal.command.CommandContext;
-import java.util.Arrays;
-import net.dv8tion.jda.api.entities.Message;
+import ga.enimaloc.displug.api.events.plugin.PluginLoaded;
+import ga.enimaloc.displug.api.events.plugin.PluginStarted;
+import ga.enimaloc.displug.api.events.plugin.PluginStopped;
 import net.dv8tion.jda.api.events.GenericEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.impl.Logger;
-import org.slf4j.impl.StaticLoggerBinder;
 
-public class CommandManager extends DManager<String, Command> implements EventListener {
+public class EventListener extends ListenerAdapter {
 
-    private final Displug displug;
+    public void onPluginLoaded(PluginLoaded event) {
+    }
 
-    private final Logger logger = StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(this.getClass());
+    public void onPluginStarted(PluginStarted event) {
+    }
 
-    public CommandManager(Displug displug) {
-        this.displug = displug;
+    public void onPluginStopped(PluginStopped event) {
+    }
+
+    public void onCommandRegister(CommandRegister event) {
+    }
+
+    public void onCommandExecuted(CommandExecuted event) {
     }
 
     @Override
-    public void add(String unused, Command command) {
-        ((DisplugImpl) displug).getRequiredPermission().addAll(Arrays.asList(command.getPermissions()));
-        super.add(command.getName(), command);
-        for (String alias : command.getAliases()) {
-            super.add(alias, command);
-        }
-        displug.getJDA().getEventManager().handle(new CommandRegister(displug.getJDA(), command));
-    }
+    public void onGenericEvent(@NotNull GenericEvent event) {
 
-    public void remove(Command command) {
-        super.remove(command.getName());
-        for (String alias : command.getAliases()) {
-            super.remove(alias);
+        // Plugin related
+        if (event instanceof PluginLoaded) {
+            onPluginLoaded((PluginLoaded) event);
+        } else if (event instanceof PluginStarted) {
+            onPluginStarted((PluginStarted) event);
+        } else if (event instanceof PluginStopped) {
+            onPluginStopped((PluginStopped) event);
         }
-    }
 
-    @Override
-    public void onEvent(@NotNull GenericEvent event) {
-        if (event instanceof MessageReceivedEvent) {
-            Message message = ((MessageReceivedEvent) event).getMessage();
-            if (message.getAuthor().isBot()) {
-                return;
-            }
-            for (String prefix : displug.getConfiguration().getPrefix()) {
-                String raw = message.getContentRaw();
-                if (!raw.startsWith(prefix)) {
-                    continue;
-                }
-                raw = raw.replaceFirst(prefix, "");
-                String[] splitRaw = raw.split(" ");
-                raw = raw.replaceFirst(splitRaw[0]+" ", "");
-                Command command = get(splitRaw[0]);
-                if (command == null) {
-                    continue;
-                }
-                try {
-                    CommandContext context = new CommandContext((MessageReceivedEvent) event, raw);
-                    command.execute(context).execute(((MessageReceivedEvent) event).getMessage());
-
-                    event.getJDA().getEventManager().handle(new CommandExecuted(event.getJDA(), command, context));
-                } catch (Exception e) {
-                    logger.warn("An error as occurred when executing command (%s)".formatted(command.getName()), e);
-                }
-            }
+        // Command related
+        if (event instanceof CommandRegister) {
+            onCommandRegister((CommandRegister) event);
+        } else if (event instanceof CommandExecuted) {
+            onCommandExecuted((CommandExecuted) event);
         }
+
+        super.onGenericEvent(event);
     }
 }
