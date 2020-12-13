@@ -271,7 +271,7 @@ public class CommandManager extends DManager<String, Command> implements EventLi
 
                     event.getJDA().getEventManager().handle(new CommandExecuted(event.getJDA(), command, context));
                 } catch (Exception e) {
-                    logger.warn("An error as occurred when executing command (%s)".formatted(command.getName()), e);
+                    logger.warn(String.format("An error as occurred when executing command (%s)", command.getName()), e);
                 }
             }
         }
