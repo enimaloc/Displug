@@ -205,6 +205,8 @@
 package ga.enimaloc.displug.api;
 
 import ga.enimaloc.displug.internal.Configuration;
+import ga.enimaloc.displug.internal.ExitCode;
+import java.util.function.Consumer;
 import net.dv8tion.jda.annotations.ReplaceWith;
 import net.dv8tion.jda.api.JDA;
 
@@ -223,5 +225,11 @@ public interface Displug {
     void addCommands(Command... commands);
 
     void removeCommands(Command... commands);
+
+    void shutdown();
+
+    void shutdown(ExitCode exitCode);
+
+    void shutdown(Consumer<Void> after);
 
 }

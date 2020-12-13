@@ -210,9 +210,11 @@ import ga.enimaloc.displug.api.events.plugin.PluginStarted;
 import ga.enimaloc.displug.internal.managers.CommandManager;
 import ga.enimaloc.displug.internal.managers.EventManager;
 import ga.enimaloc.displug.internal.managers.PluginManager;
+import ga.enimaloc.displug.plugin.Displugin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -299,6 +301,23 @@ public class DisplugImpl implements Displug {
         for (Command command : commands) {
             commandManager.remove(command);
         }
+    }
+
+    @Override
+    public void shutdown() {
+        shutdown(ExitCode.OK);
+    }
+
+    @Override
+    public void shutdown(ExitCode exitCode) {
+        shutdown(v -> exitCode.exit());
+    }
+
+    @Override
+    public void shutdown(Consumer<Void> after) {
+        pluginManager.all().forEach(Displugin::onDisable);
+        getJDA().shutdown();
+        after.accept(null);
     }
 
     @Override

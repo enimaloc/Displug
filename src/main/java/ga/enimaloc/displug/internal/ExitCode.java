@@ -210,6 +210,7 @@ import org.slf4j.impl.Logger;
 @SuppressWarnings("unused")
 public enum ExitCode {
 
+    OK(0),
     JDA_RELATED(1001),
     CONFIGURATION_RELATED(1002),
     PLUGIN_RELATED(1003),
