@@ -284,7 +284,21 @@ public class DisplugImpl implements Displug {
 
     @Override
     public void addCommand(Command command) {
-        commandManager.add("", command);
+        addCommands(command);
+    }
+
+    @Override
+    public void addCommands(Command... commands) {
+        for (Command command : commands) {
+            commandManager.add("", command);
+        }
+    }
+
+    @Override
+    public void removeCommands(Command... commands) {
+        for (Command command : commands) {
+            commandManager.remove(command);
+        }
     }
 
     @Override

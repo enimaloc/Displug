@@ -239,6 +239,13 @@ public class CommandManager extends DManager<String, Command> implements EventLi
         displug.getJDA().getEventManager().handle(new CommandRegister(displug.getJDA(), command));
     }
 
+    public void remove(Command command) {
+        super.remove(command.getName());
+        for (String alias : command.getAliases()) {
+            super.remove(alias);
+        }
+    }
+
     @Override
     public void onEvent(@NotNull GenericEvent event) {
         if (event instanceof MessageReceivedEvent) {

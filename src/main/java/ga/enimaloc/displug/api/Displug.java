@@ -205,6 +205,7 @@
 package ga.enimaloc.displug.api;
 
 import ga.enimaloc.displug.internal.Configuration;
+import net.dv8tion.jda.annotations.ReplaceWith;
 import net.dv8tion.jda.api.JDA;
 
 public interface Displug {
@@ -215,7 +216,12 @@ public interface Displug {
 
     Configuration getConfiguration();
 
-    @SuppressWarnings("EmptyMethod")
+    @Deprecated
+    @ReplaceWith("Displug#addCommands(Command...)")
     void addCommand(Command command);
+
+    void addCommands(Command... commands);
+
+    void removeCommands(Command... commands);
 
 }
