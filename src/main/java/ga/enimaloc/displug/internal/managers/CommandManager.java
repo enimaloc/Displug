@@ -206,6 +206,8 @@ package ga.enimaloc.displug.internal.managers;
 
 import ga.enimaloc.displug.api.Command;
 import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.api.events.command.CommandExecuted;
+import ga.enimaloc.displug.api.events.command.CommandRegister;
 import ga.enimaloc.displug.internal.DisplugImpl;
 import ga.enimaloc.displug.internal.command.CommandContext;
 import java.util.Arrays;
@@ -228,12 +230,13 @@ public class CommandManager extends DManager<String, Command> implements EventLi
     }
 
     @Override
-    public void add(String key, Command command) {
+    public void add(String unused, Command command) {
         ((DisplugImpl) displug).getRequiredPermission().addAll(Arrays.asList(command.getPermissions()));
         super.add(command.getName(), command);
         for (String alias : command.getAliases()) {
             super.add(alias, command);
         }
+        displug.getJDA().getEventManager().handle(new CommandRegister(displug.getJDA(), command));
     }
 
     @Override
@@ -256,7 +259,10 @@ public class CommandManager extends DManager<String, Command> implements EventLi
                     continue;
                 }
                 try {
-                    command.execute(new CommandContext((MessageReceivedEvent) event, raw)).execute(((MessageReceivedEvent) event).getMessage());
+                    CommandContext context = new CommandContext((MessageReceivedEvent) event, raw);
+                    command.execute(context).execute(((MessageReceivedEvent) event).getMessage());
+
+                    event.getJDA().getEventManager().handle(new CommandExecuted(event.getJDA(), command, context));
                 } catch (Exception e) {
                     logger.warn("An error as occurred when executing command (%s)".formatted(command.getName()), e);
                 }

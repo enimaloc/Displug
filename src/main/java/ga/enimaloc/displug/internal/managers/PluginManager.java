@@ -205,6 +205,7 @@
 package ga.enimaloc.displug.internal.managers;
 
 import ga.enimaloc.displug.api.Displug;
+import ga.enimaloc.displug.api.events.plugin.PluginLoaded;
 import ga.enimaloc.displug.internal.DisplugImpl;
 import ga.enimaloc.displug.internal.ExitCode;
 import ga.enimaloc.displug.internal.exception.PluginException;
@@ -275,6 +276,7 @@ public class PluginManager extends SManager<Displugin> {
                 }
                 Displugin plugin = (Displugin) mainClass.getConstructor(Displug.class).newInstance(displug);
                 ((DisplugImpl) displug).getRequiredPermission().addAll(Arrays.asList(plugin.getPermissions()));
+                displug.getJDA().getEventManager().handle(new PluginLoaded(displug.getJDA(), plugin));
                 plugin.onLoad();
                 add(plugin);
             } catch (MalformedURLException e) {

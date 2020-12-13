@@ -224,6 +224,10 @@ public class SManager<T> {
         this.objects.remove(i);
     }
 
+    public void remove(T object) {
+        this.objects.remove(object);
+    }
+
     public T get(int i) {
         return this.objects.get(i);
     }
