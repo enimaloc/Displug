@@ -204,6 +204,7 @@
 
 package ga.enimaloc.displug.internal.managers;
 
+import com.moandjiezana.toml.Toml;
 import ga.enimaloc.displug.api.Displug;
 import ga.enimaloc.displug.api.events.plugin.PluginLoaded;
 import ga.enimaloc.displug.internal.DisplugImpl;
@@ -221,7 +222,6 @@ import java.util.Map;
 import java.util.Objects;
 import org.slf4j.impl.Logger;
 import org.slf4j.impl.StaticLoggerBinder;
-import org.yaml.snakeyaml.Yaml;
 
 public class PluginManager extends SManager<Displugin> {
 
@@ -261,7 +261,7 @@ public class PluginManager extends SManager<Displugin> {
                 if (pluginInfoInputStream == null) {
                     throw new PluginException("Can't find plugin.yml in jar");
                 }
-                Map<String, Object> pluginInfo = new Yaml().load(pluginInfoInputStream);
+                Map<String, Object> pluginInfo = new Toml().read(pluginInfoInputStream).toMap();
                 String name = (String) pluginInfo.get("name");
                 String main = (String) pluginInfo.get("main");
                 String author = (String) pluginInfo.get("author");

@@ -253,14 +253,14 @@ public class CommandManager extends DManager<String, Command> implements EventLi
             if (message.getAuthor().isBot()) {
                 return;
             }
-            for (String prefix : displug.getConfiguration().getPrefix()) {
+            for (String prefix : displug.getConfiguration().bot.prefix) {
                 String raw = message.getContentRaw();
                 if (!raw.startsWith(prefix)) {
                     continue;
                 }
                 raw = raw.replaceFirst(prefix, "");
                 String[] splitRaw = raw.split(" ");
-                raw = raw.replaceFirst(splitRaw[0]+" ", "");
+                raw = raw.replaceFirst(splitRaw[0] + " ", "");
                 Command command = get(splitRaw[0]);
                 if (command == null) {
                     continue;
