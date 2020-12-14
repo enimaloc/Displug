@@ -249,8 +249,22 @@ public class DisplugImpl implements Displug {
 
     private void setupConfiguration() {
         if (!Configuration.DEFAULT_CONFIGURATION_FILE.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs();
+            int createTry = 0;
+            while (!Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().mkdirs()) {
+                createTry++;
+                if (createTry <= 5) {
+                    ExitCode.CONFIGURATION_RELATED.exit(
+                            logger,
+                            ExitCode.Level.ERROR,
+                            String.format(
+                                    "Cannot create '%s' after %s try",
+                                    Configuration.DEFAULT_CONFIGURATION_FILE.getParentFile().getAbsolutePath(),
+                                    createTry
+                            )
+                    );
+                }
+            }
+            configuration.setDefault();
             configuration.save();
             ExitCode.CONFIGURATION_RELATED.exit(logger, ExitCode.Level.INFO, "A new configuration file was created please modify it!");
         }
@@ -269,7 +283,7 @@ public class DisplugImpl implements Displug {
         List<GatewayIntent> intents = new ArrayList<>();
         pluginManager.all().forEach(plugin -> intents.addAll(Arrays.asList(plugin.getIntents())));
         try {
-            jda = JDABuilder.create(configuration.getToken(), intents).setEventManager(new EventManager()).addEventListeners(commandManager).build();
+            jda = JDABuilder.create(configuration.bot.token, intents).setEventManager(new EventManager()).addEventListeners(commandManager).build();
         } catch (LoginException e) {
             ExitCode.JDA_RELATED.exit(logger, e);
         }
